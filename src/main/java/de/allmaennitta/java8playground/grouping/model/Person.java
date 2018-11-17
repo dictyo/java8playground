@@ -1,4 +1,4 @@
-package de.allmaennitta.grouping.model;
+package de.allmaennitta.java8playground.grouping.model;
 
 public class Person {
     private final String name;

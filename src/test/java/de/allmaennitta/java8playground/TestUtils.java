@@ -1,7 +1,7 @@
-package de.allmaennitta;
+package de.allmaennitta.java8playground;
 
-import de.allmaennitta.grouping.model.Person;
-import de.allmaennitta.grouping.model.Pet;
+import de.allmaennitta.java8playground.grouping.model.Person;
+import de.allmaennitta.java8playground.grouping.model.Pet;
 
 import java.util.Arrays;
 import java.util.List;
