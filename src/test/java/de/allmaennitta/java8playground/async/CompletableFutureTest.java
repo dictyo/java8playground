@@ -1,5 +1,6 @@
 package de.allmaennitta.java8playground.async;
 
+import org.assertj.core.api.CompletableFutureAssert;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -8,6 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -136,7 +138,7 @@ public class CompletableFutureTest {
 
     private String sendMsgWithWait(String msg, int soManySeconds) {
         System.out.println("Thread: " + Thread.currentThread().getName());
-        System.out.printf("Sleeping %d seconds.", soManySeconds);
+        System.out.printf("Sleeping %d seconds.\n", soManySeconds);
         try {
             TimeUnit.SECONDS.sleep(soManySeconds);
         } catch (InterruptedException e) {
@@ -162,14 +164,27 @@ public class CompletableFutureTest {
 
     @Disabled
     @Test
-    public void testTimeout() {
+    public void testTimeout() throws ExecutionException, InterruptedException {
 
+        AtomicLong startTime = new AtomicLong(0L);
         CompletableFuture completedException = CompletableFuture
                 .supplyAsync(() -> true)
-                .thenApply(b -> this.sendMsgWithWait("Too long", 5))
-                .orTimeout(2, TimeUnit.SECONDS); //Seems not to work properly
+                .thenApply(b -> {
+                    startTime.addAndGet(System.currentTimeMillis());
+                    return this.sendMsgWithWait("Too long", 5);
+                })
+                .thenApply(s -> {
+                    System.out.println("DeltaTime Millis: " + (System.currentTimeMillis()-startTime.get()));
+                    return s;
+                })
+//              .orTimeout(2, TimeUnit.SECONDS); //Seems not to work properly (Completed with value)
+                .completeOnTimeout("Timeout!", 1, TimeUnit.SECONDS); //Seems not to work, either.
 
-        assertThat(completedException).isCompletedWithValue("Too long");
+
+          assertThat((String) completedException.get()).isEqualTo("Too long"); // WHY?
 //        assertThatThrownBy(() -> {}).hasMessageContaining("Too long"); //WHY NOT?
     }
+
+    //TODO thenCombine
+    //TODO acceptEither
 }
